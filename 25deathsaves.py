@@ -2,15 +2,14 @@
 
 import random
 
-success = 0
-failure = 0
 revive = 0
-is_revived = False
 stable = 0
 dead = 0
 total = 0
 
 for i in range(1, 101):				# Calculate probabilities of stable, dies and revives
+	success = 0
+	failure = 0
 	is_revived = False
 	while True:
 		roll = random.randint(1, 20)
