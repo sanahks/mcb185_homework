@@ -13,22 +13,15 @@ for arg in sys.argv[1:]:	# Get values from the command line
 num_vals = len(nums)		# Calculate the number of values and the mean
 mean = sum(nums) / num_vals
 
-for i in range(len(nums)):	# Calculate the minimum, maximum and standard deviation
-	if i == 0:
-		max = nums[i]
-		min = nums[i]
-	else:
-		if nums[i] > max:
-			max = nums[i]
-		if nums[i] < min:
-			min = nums[i]
-		
+for i in range(len(nums)):	# Calculate the standard deviation
 	diff = nums[i] - mean
 	std_dev_num += diff ** 2
 
 std_dev = std_dev_num / (num_vals - 1)
 
 nums.sort()
+min = nums[0]				# Calculate the minimum and the maximum
+max = nums[len(nums) - 1]
 
 if num_vals % 2 == 0:		# Calculate the median
 	index_1 = math.floor(num_vals / 2) - 1
