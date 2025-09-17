@@ -17,11 +17,11 @@ min_orf_length = arg.min_orf
 for defline, seq in mcb185.read_fasta(filename):
 	defwords = defline.split()
 	name = defwords[0]
-	seq = seq[0:10]
-	print(seq)
-	print(min_orf_length)
+	seq = seq[0:100000]
+	#print(min_orf_length)
 	
 	frame_1 = seq[0:len(seq)]
+	#print(seq)
 	frame_2 = seq[1:len(seq)]
 	frame_3 = seq[2:len(seq)]
 	
@@ -39,10 +39,46 @@ for defline, seq in mcb185.read_fasta(filename):
 	reverse_orf_ends = []
 	
 	for frame in forward_frames:
+		i = 0
+		while True:
+			if i == len(frame) - 3: break
+			codon = frame[i:i+3]
+			if codon == 'ATG':
+				for j in range(i+3, len(frame), 3):
+					codon = frame[j:j+3]
+					if codon == 'TAA' or codon == 'TGA' or codon == 'TAG':
+						start = i
+						end = j + 2
+						forward_orf_starts.append(start)
+						forward_orf_ends.append(end)
+						i = j + 3
+			else:
+				i += 1
+				
+		
+	for frame in reverse_frames:
+		i = 0
+		while True:
+			if i == len(frame) - 3: break
+			codon = frame[i:i+3]
+			if codon == 'ATG':
+				for j in range(i+3, len(frame), 3):
+					codon = frame[j:j+3]
+					if codon == 'TAA' or codon == 'TGA' or codon == 'TAG':
+						start = i
+						end = j + 2
+						reverse_orf_starts.append(start)
+						reverse_orf_ends.append(end)
+						i = j + 3
+			else:
+				i += 1
+	
+	'''
+	for frame in forward_frames:
+		while True:
 		start = 0
 		end = 3
 		is_orf = False
-		while True:
 			codon = frame[start:end]
 			if is_orf == False and codon == 'ATG':
 				is_orf = True
@@ -73,16 +109,20 @@ for defline, seq in mcb185.read_fasta(filename):
 			start += 3
 			end += 3
 			if end > len(frame): break
-			
+		'''	
 	
-	for forward_start, forward_end in zip(forward_orf_starts):
-		length = forward_end - forward_start - 1
-		print(length)
+	for forward_start, forward_end in zip(forward_orf_starts, forward_orf_ends):
+		length = forward_end - forward_start + 1
+		#print(length)
 		if length >= min_orf_length:
 			print(forward_start, forward_end)
 			
-	for reverse_start, reverse_end in zip(reverse_orf_starts):
-		length = reverse_end - reverse_start - 1
+	
+	print()
+	
+	for reverse_start, reverse_end in zip(reverse_orf_starts, reverse_orf_ends):
+		length = reverse_end - reverse_start + 1
 		if length >= min_orf_length:
 			print(reverse_start, reverse_end)
 		
+
