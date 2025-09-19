@@ -14,10 +14,11 @@ print('Finding putative coding genes in', arg.file)
 filename = arg.file
 min_orf_length = arg.min_orf
 
+
 for defline, seq in mcb185.read_fasta(filename):
 	defwords = defline.split()
 	name = defwords[0]
-	seq = seq[0:100000]
+	#seq = seq[0:100000]
 	#print(min_orf_length)
 	
 	frame_1 = seq[0:len(seq)]
@@ -38,40 +39,52 @@ for defline, seq in mcb185.read_fasta(filename):
 	reverse_orf_starts = []
 	reverse_orf_ends = []
 	
+	fwd_offset = 0
 	for frame in forward_frames:
 		i = 0
-		while True:
-			if i == len(frame) - 3: break
+		while i <= len(frame) - 3:
+			#if i == len(frame) - 3: break
 			codon = frame[i:i+3]
 			if codon == 'ATG':
 				for j in range(i+3, len(frame), 3):
 					codon = frame[j:j+3]
 					if codon == 'TAA' or codon == 'TGA' or codon == 'TAG':
-						start = i
-						end = j + 2
+						start = i + 1 + fwd_offset
+						end = j + 3 + fwd_offset
 						forward_orf_starts.append(start)
 						forward_orf_ends.append(end)
 						i = j + 3
+						break
+				else: # no stop found
+					i += 3
 			else:
-				i += 1
+				i += 3
 				
-		
+		fwd_offset += 1
+				
+	
+	rev_offset = 0
 	for frame in reverse_frames:
 		i = 0
-		while True:
-			if i == len(frame) - 3: break
+		while i <= len(frame) - 3:
+			#if i == len(frame) - 3: break
 			codon = frame[i:i+3]
 			if codon == 'ATG':
 				for j in range(i+3, len(frame), 3):
 					codon = frame[j:j+3]
 					if codon == 'TAA' or codon == 'TGA' or codon == 'TAG':
-						start = i
-						end = j + 2
+						start = i + 1 + rev_offset
+						end = j + 3 + rev_offset
 						reverse_orf_starts.append(start)
 						reverse_orf_ends.append(end)
 						i = j + 3
+						break
+				else: # no stop found
+					i += 3
 			else:
-				i += 1
+				i += 3
+				
+		rev_offset += 1
 	
 	'''
 	for frame in forward_frames:
@@ -110,6 +123,9 @@ for defline, seq in mcb185.read_fasta(filename):
 			end += 3
 			if end > len(frame): break
 		'''	
+		
+	#print(len(forward_orf_starts), len(forward_orf_ends))
+	#print(len(reverse_orf_starts), len(reverse_orf_ends))
 	
 	for forward_start, forward_end in zip(forward_orf_starts, forward_orf_ends):
 		length = forward_end - forward_start + 1
@@ -121,7 +137,9 @@ for defline, seq in mcb185.read_fasta(filename):
 	print()
 	
 	for reverse_start, reverse_end in zip(reverse_orf_starts, reverse_orf_ends):
-		length = reverse_end - reverse_start + 1
+		fwd_start = len(seq) - reverse_end + 1
+		fwd_end = len(seq) - reverse_start + 1
+		length = fwd_end - fwd_start + 1
 		if length >= min_orf_length:
 			print(reverse_start, reverse_end)
 		
